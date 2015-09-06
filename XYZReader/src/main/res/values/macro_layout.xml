@@ -1,11 +1,10 @@
 <resources>
-    <!-- Semantic definitions -->
-    <dimen name="horizontal_page_margin">@dimen/margin_medium</dimen>
-    <dimen name="vertical_page_margin">@dimen/margin_medium</dimen>
 
     <!-- list -->
     <dimen name="list_side_margin">4dp</dimen>
-    <dimen name="list_toolbar_side_margin">0dp</dimen>
+    <dimen name="list_top_margin">4dp</dimen>
+    <dimen name="list_bottom_margin">4dp</dimen>
+    <dimen name="list_toolbar_side_margin">24dp</dimen>
     <integer name="list_column_count">2</integer>
 
     <!-- detail -->
