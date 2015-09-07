@@ -10,6 +10,9 @@
 
     <dimen name="toolbar_height">128dp</dimen>
 
+    <dimen name="expanded_title_margin_start">16dp</dimen>
+    <dimen name="expanded_title_margin_end">72dp</dimen>
+
 
     <!-- detail -->
     <dimen name="detail_title_text_size">32sp</dimen>

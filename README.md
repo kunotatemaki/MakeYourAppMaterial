@@ -13,3 +13,9 @@ http://stackoverflow.com/questions/24459352/how-can-i-add-the-new-floating-actio
 
 fab responding to scroll events
 http://guides.codepath.com/android/Floating-Action-Buttons#using-coordinatorlayout
+
+tabs with material style
+https://guides.codepath.com/android/Google-Play-Style-Tabs-using-TabLayout
+
+acceptable uris para cargar fotos
+https://github.com/nostra13/Android-Universal-Image-Loader
