@@ -8,6 +8,7 @@
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/appbarlayout"
         >
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
@@ -15,10 +16,10 @@
             android:layout_height="match_parent"
             android:fitsSystemWindows="true"
             app:contentScrim="?attr/colorPrimary"
-            app:expandedTitleMarginEnd="@dimen/expanded_title_margin_end"
+            app:expandedTitleMarginEnd="@dimen/title_margin_collapsed"
             app:collapsedTitleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Title.Inverse"
             app:expandedTitleTextAppearance="@style/Theme.ExpandedText"
-            app:expandedTitleMarginStart="@dimen/expanded_title_margin_start"
+            app:expandedTitleMarginStart="@dimen/title_margin_expanded"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
             <com.example.xyzreader.ui.ThreeTwoImageView
                 android:id="@+id/photo"
@@ -36,8 +37,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                app:contentInsetStart="72dp"
+                app:contentInsetStart="@dimen/title_margin_collapsed"
                 app:layout_collapseMode="pin"/>
+            <TextView
+                android:id="@+id/article_title2"
+                style="@style/Theme.ExpandedText"
+                android:layout_gravity="center_vertical"
+                android:text="Prueba para ver siesto cabe en dos lineas o tres sin probmelmas de espacio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"
+                android:layout_marginLeft="@dimen/title_margin_expanded"/>
+
 
         </android.support.design.widget.CollapsingToolbarLayout>
 
@@ -65,6 +76,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:background="@drawable/photo_background_protection" />
+                <TextView
+                    android:id="@+id/article_title2"
+                    android:text="PRUEBA"
+                    style="?android:attr/textAppearanceLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"
+                    android:textColor="#fff"
+                    android:textStyle="bold"
+                    android:textSize="@dimen/detail_title_text_size"
+                    android:lineSpacingMultiplier="0.9" />
 
             </FrameLayout>
 -->

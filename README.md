@@ -19,3 +19,7 @@ https://guides.codepath.com/android/Google-Play-Style-Tabs-using-TabLayout
 
 acceptable uris para cargar fotos
 https://github.com/nostra13/Android-Universal-Image-Loader
+
+custom layout behavior example
+https://github.com/saulmm/CoordinatorLayoutExample
+

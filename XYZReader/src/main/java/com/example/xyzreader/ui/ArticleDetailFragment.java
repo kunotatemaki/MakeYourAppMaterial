@@ -7,10 +7,10 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -21,9 +21,11 @@ import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,17 +34,19 @@ import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 
-import java.lang.reflect.Field;
-
 /**
  * A fragment representing a single Article detail screen. This fragment is
  * either contained in a {@link ArticleListActivity} in two-pane mode (on
  * tablets) or a {@link ArticleDetailActivity} on handsets.
  */
 public class ArticleDetailFragment extends Fragment implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+        LoaderManager.LoaderCallbacks<Cursor>, AppBarLayout.OnOffsetChangedListener{
     private static final String TAG = "ArticleDetailFragment";
+    private static final float PERCENTAGE_TO_ELLIPSIZE_TITLE  = 0.1f;
+    private static final float PERCENTAGE_TO_CENTER_TITLE  = 0.9f;
 
+    private static final float PERCENTAGE_TO_HIDE_TITLE_DETAILS     = 0.3f;
+    private static final int ALPHA_ANIMATIONS_DURATION              = 200;
     public static final String ARG_ITEM_ID = "item_id";
     private static final float PARALLAX_FACTOR = 1.25f;
 
@@ -60,6 +64,8 @@ public class ArticleDetailFragment extends Fragment implements
     private int mScrollY;
     private boolean mIsCard = false;
     private int mStatusBarFullOpacityBottom;
+    TextView titleView2;
+    private AppBarLayout mAppBarLayout;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -187,38 +193,26 @@ public class ArticleDetailFragment extends Fragment implements
         Toolbar toolbar = (Toolbar) mRootView.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(true);
-        Field f = null;
-        try {
-            f = toolbar.getClass().getDeclaredField("mTitleTextView");
-            f.setAccessible(true);
-            TextView titleTextView = null;
-            titleTextView = (TextView) f.get(toolbar);
-            titleTextView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-            titleTextView.setFocusable(true);
-            titleTextView.setFocusableInTouchMode(true);
-            titleTextView.requestFocus();
-            titleTextView.setSingleLine(true);
-            titleTextView.setSelected(true);
-            titleTextView.setMarqueeRepeatLimit(-1);
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
+        titleView2 = (TextView) mRootView.findViewById(R.id.article_title2);
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        mAppBarLayout = (AppBarLayout)mRootView.findViewById(R.id.appbarlayout);
+        if(mAppBarLayout != null){
+            mAppBarLayout.addOnOffsetChangedListener(this);
+        }
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
             titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(mCursor.getString(ArticleLoader.Query.TITLE));
+            titleView2.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+
             bylineView.setText(Html.fromHtml(
                     DateUtils.getRelativeTimeSpanString(
                             mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
@@ -297,4 +291,77 @@ public class ArticleDetailFragment extends Fragment implements
 //                : mPhotoView.getHeight() - mScrollY;
         return 0;
     }
+
+    @Override
+    public void onOffsetChanged(AppBarLayout appBarLayout, int offset) {
+
+        int maxScroll = appBarLayout.getTotalScrollRange();
+        float percentage = (float) Math.abs(offset) / (float) maxScroll;
+
+        handleTitleBehavior(percentage);
+        //handleToolbarTitleVisibility(percentage);
+
+    }
+
+    private void handleTitleBehavior(float percentage) {
+
+        if (percentage >= PERCENTAGE_TO_ELLIPSIZE_TITLE) {
+            titleView2.setEllipsize(TextUtils.TruncateAt.END);
+            titleView2.setSingleLine();
+            titleView2.setHorizontallyScrolling(false);
+        }else{
+            titleView2.setEllipsize(null);
+            titleView2.setSingleLine(false);
+        }
+
+        float marginOffset = percentage *
+                (getResources().getDimension(R.dimen.title_margin_collapsed) -
+                        getResources().getDimension(R.dimen.title_margin_expanded));
+        CollapsingToolbarLayout.LayoutParams params = (CollapsingToolbarLayout.LayoutParams)titleView2.getLayoutParams();
+        params.setMargins((int) (getResources().getDimension(R.dimen.title_margin_expanded) + marginOffset), params.topMargin, params.rightMargin, params.bottomMargin); //substitute parameters for left, top, right, bottom
+        titleView2.setLayoutParams(params);
+
+        float textSizeRange = getResources().getDimension(R.dimen.title_toolbar_expanded) -
+                getResources().getDimension(R.dimen.title_toolbar_collapsed);
+        titleView2.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.title_toolbar_expanded) - percentage * textSizeRange);
+
+        /*if (percentage <= PERCENTAGE_TO_BOLD_TITLE) {
+            titleView2.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+
+        }else{
+            titleView2.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
+        }*/
+
+    }
+
+
+    /*private void handleAlphaOnTitle(float percentage) {
+
+        if (percentage >= PERCENTAGE_TO_HIDE_TITLE_DETAILS) {
+
+            if(mIsTheTitleContainerVisible) {
+                startAlphaAnimation(mTitleContainer, ALPHA_ANIMATIONS_DURATION, View.INVISIBLE);
+                mIsTheTitleContainerVisible = false;
+            }
+
+        } else {
+
+            if (!mIsTheTitleContainerVisible) {
+                startAlphaAnimation(mTitleContainer, ALPHA_ANIMATIONS_DURATION, View.VISIBLE);
+                mIsTheTitleContainerVisible = true;
+            }
+        }
+    }*/
+
+    public static void startAlphaAnimation (View v, long duration, int visibility) {
+
+        AlphaAnimation alphaAnimation = (visibility == View.VISIBLE)
+                ? new AlphaAnimation(0f, 1f)
+                : new AlphaAnimation(1f, 0f);
+
+        alphaAnimation.setDuration(duration);
+        alphaAnimation.setFillAfter(true);
+        v.startAnimation(alphaAnimation);
+    }
+
 }
