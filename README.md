@@ -11,6 +11,9 @@ http://stackoverflow.com/questions/24413680/swiperefreshlayout-behind-actionbar
 poner el fab en la toolbar
 http://stackoverflow.com/questions/24459352/how-can-i-add-the-new-floating-action-button-between-two-widgets-layouts
 
+configurar fab
+http://antonioleiva.com/floating-action-button/
+
 fab responding to scroll events
 http://guides.codepath.com/android/Floating-Action-Buttons#using-coordinatorlayout
 

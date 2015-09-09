@@ -1,0 +1,16 @@
+<resources>
+
+    <!-- Define standard dimensions to comply with Holo-style grids and rhythm. -->
+
+
+    <dimen name="toolbar_height">128dp</dimen>
+
+    <dimen name="title_margin_expanded">72dp</dimen>
+    <dimen name="title_margin_collapsed">72dp</dimen>
+
+
+    <dimen name="title_toolbar_collapsed">18sp</dimen>
+    <dimen name="title_toolbar_expanded">18sp</dimen>
+
+
+</resources>

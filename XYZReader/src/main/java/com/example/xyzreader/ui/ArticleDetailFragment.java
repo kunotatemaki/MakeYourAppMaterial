@@ -17,9 +17,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -43,7 +46,7 @@ public class ArticleDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor>, AppBarLayout.OnOffsetChangedListener{
     private static final String TAG = "ArticleDetailFragment";
     private static final float PERCENTAGE_TO_ELLIPSIZE_TITLE  = 0.1f;
-    private static final float PERCENTAGE_TO_CENTER_TITLE  = 0.9f;
+    private static final float PERCENTAGE_TO_BOLD_TITLE  = 0.5f;
 
     private static final float PERCENTAGE_TO_HIDE_TITLE_DETAILS     = 0.3f;
     private static final int ALPHA_ANIMATIONS_DURATION              = 200;
@@ -64,8 +67,9 @@ public class ArticleDetailFragment extends Fragment implements
     private int mScrollY;
     private boolean mIsCard = false;
     private int mStatusBarFullOpacityBottom;
-    TextView titleView2;
+    TextView titleView;
     private AppBarLayout mAppBarLayout;
+    Toolbar toolbar;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -144,7 +148,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View v) {
                 startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
                         .setType("text/plain")
                         .setText("Some sample text")
@@ -190,13 +194,12 @@ public class ArticleDetailFragment extends Fragment implements
         if (mRootView == null) {
             return;
         }
-        Toolbar toolbar = (Toolbar) mRootView.findViewById(R.id.toolbar);
+        toolbar = (Toolbar) mRootView.findViewById(R.id.toolbar);
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(false);
+        ((AppCompatActivity)getActivity()).getSupportActionBar().setDisplayShowTitleEnabled(true);
 
-        TextView titleView = (TextView) mRootView.findViewById(R.id.article_title);
-        titleView2 = (TextView) mRootView.findViewById(R.id.article_title2);
+        titleView = (TextView) mRootView.findViewById(R.id.article_title);
         TextView bylineView = (TextView) mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = (TextView) mRootView.findViewById(R.id.article_body);
@@ -211,7 +214,7 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
             titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            titleView2.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+            ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(mCursor.getString(ArticleLoader.Query.TITLE));
 
             bylineView.setText(Html.fromHtml(
                     DateUtils.getRelativeTimeSpanString(
@@ -304,34 +307,12 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
     private void handleTitleBehavior(float percentage) {
-
         if (percentage >= PERCENTAGE_TO_ELLIPSIZE_TITLE) {
-            titleView2.setEllipsize(TextUtils.TruncateAt.END);
-            titleView2.setSingleLine();
-            titleView2.setHorizontallyScrolling(false);
+            titleView.setVisibility(View.GONE);
         }else{
-            titleView2.setEllipsize(null);
-            titleView2.setSingleLine(false);
+            titleView.setVisibility(View.VISIBLE);
+            titleView.setAlpha(1-percentage/PERCENTAGE_TO_ELLIPSIZE_TITLE);
         }
-
-        float marginOffset = percentage *
-                (getResources().getDimension(R.dimen.title_margin_collapsed) -
-                        getResources().getDimension(R.dimen.title_margin_expanded));
-        CollapsingToolbarLayout.LayoutParams params = (CollapsingToolbarLayout.LayoutParams)titleView2.getLayoutParams();
-        params.setMargins((int) (getResources().getDimension(R.dimen.title_margin_expanded) + marginOffset), params.topMargin, params.rightMargin, params.bottomMargin); //substitute parameters for left, top, right, bottom
-        titleView2.setLayoutParams(params);
-
-        float textSizeRange = getResources().getDimension(R.dimen.title_toolbar_expanded) -
-                getResources().getDimension(R.dimen.title_toolbar_collapsed);
-        titleView2.setTextSize(TypedValue.COMPLEX_UNIT_PX, getResources().getDimension(R.dimen.title_toolbar_expanded) - percentage * textSizeRange);
-
-        /*if (percentage <= PERCENTAGE_TO_BOLD_TITLE) {
-            titleView2.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
-
-        }else{
-            titleView2.setTypeface(Typeface.defaultFromStyle(Typeface.NORMAL));
-        }*/
-
     }
 
 
