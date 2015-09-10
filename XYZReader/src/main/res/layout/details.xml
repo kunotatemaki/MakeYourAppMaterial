@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:background="#fff">
+
+    <LinearLayout
+        android:id="@+id/meta_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/theme_primary"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/detail_inner_horiz_margin"
+        android:paddingRight="@dimen/detail_inner_horiz_margin"
+        android:paddingTop="@dimen/detail_metabar_vert_padding"
+        android:paddingBottom="@dimen/detail_metabar_vert_padding">
+
+        <TextView
+            android:id="@+id/article_byline"
+            style="?android:attr/textAppearanceSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/date" />
+    </LinearLayout>
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/cardview_detailed"
+        android:layout_marginTop="@dimen/card_margin_top"
+        app:cardElevation="@dimen/card_raised_elevation"
+        app:cardUseCompatPadding="true">
+
+        <TextView
+            android:id="@+id/article_body"
+            style="?android:attr/textAppearanceMedium"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/detail_inner_top_margin"
+            android:layout_marginLeft="@dimen/detail_inner_horiz_margin"
+            android:layout_marginRight="@dimen/detail_inner_horiz_margin"
+            android:paddingBottom="@dimen/detail_body_bottom_margin"
+            android:textColorLink="@color/hyperlink"
+            android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier" />
+
+    </android.support.v7.widget.CardView>
+</LinearLayout>

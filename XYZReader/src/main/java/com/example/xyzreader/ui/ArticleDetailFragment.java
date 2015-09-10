@@ -9,22 +9,19 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.ShareCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.graphics.Palette;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ForegroundColorSpan;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,10 +53,6 @@ public class ArticleDetailFragment extends Fragment implements
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
-    private int mMutedColor = 0xFF333333;
-    private ObservableScrollView mScrollView;
-    //private DrawInsetsFrameLayout mDrawInsetsFrameLayout;
-    private ColorDrawable mStatusBarColorDrawable;
 
     private int mTopInset;
     //private View mPhotoContainerView;
@@ -70,6 +63,8 @@ public class ArticleDetailFragment extends Fragment implements
     TextView titleView;
     private AppBarLayout mAppBarLayout;
     Toolbar toolbar;
+    CardView cardView;
+    ImageView backgroundProtection;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -119,32 +114,10 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-//        mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
-//                mRootView.findViewById(R.id.draw_insets_frame_layout);
-//        mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
-//            @Override
-//            public void onInsetsChanged(Rect insets) {
-//                mTopInset = insets.top;
-//            }
-//        });
-//        CollapsingToolbarLayout collapsingToolbar =
-//                (CollapsingToolbarLayout) mRootView.findViewById(R.id.collapsing_toolbar);
-//        collapsingToolbar.setTitle("Title");
-        mScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
-        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
-            @Override
-            public void onScrollChanged() {
-                mScrollY = mScrollView.getScrollY();
-                getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
-                //mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
-                updateStatusBar();
-            }
-        });
+        initActivityTransitions();
 
         mPhotoView = (ImageView) mRootView.findViewById(R.id.photo);
         //mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
-
-        mStatusBarColorDrawable = new ColorDrawable(0);
 
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,24 +130,20 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
         bindViews();
-        updateStatusBar();
         return mRootView;
     }
 
-    private void updateStatusBar() {
-        int color = 0;
-        if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
-            float f = progress(mScrollY,
-                    mStatusBarFullOpacityBottom - mTopInset * 3,
-                    mStatusBarFullOpacityBottom - mTopInset);
-            color = Color.argb((int) (255 * f),
-                    (int) (Color.red(mMutedColor) * 0.9),
-                    (int) (Color.green(mMutedColor) * 0.9),
-                    (int) (Color.blue(mMutedColor) * 0.9));
+    private void initActivityTransitions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            TransitionInflater inflater = TransitionInflater.from(getActivity());
+            Transition transition = inflater.inflateTransition(R.transition.detail_window_enter_transition);
+            /*Slide transition = new Slide();
+            transition.excludeTarget(android.R.id.statusBarBackground, true);*/
+            getActivity().getWindow().setEnterTransition(transition);
+            getActivity().getWindow().setReturnTransition(transition);
         }
-        mStatusBarColorDrawable.setColor(color);
-        //mDrawInsetsFrameLayout.setInsetBackground(mStatusBarColorDrawable);
     }
+
 
     static float progress(float v, float min, float max) {
         return constrain((v - min) / (max - min), 0, 1);
@@ -208,12 +177,15 @@ public class ArticleDetailFragment extends Fragment implements
         if(mAppBarLayout != null){
             mAppBarLayout.addOnOffsetChangedListener(this);
         }
-
+        cardView = (CardView) mRootView.findViewById(R.id.cardview_detailed);
+        backgroundProtection = (ImageView) mRootView.findViewById(R.id.background_protection);
         if (mCursor != null) {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
-            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+            if(titleView != null) {
+                titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+            }
             ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(mCursor.getString(ArticleLoader.Query.TITLE));
 
             bylineView.setText(Html.fromHtml(
@@ -231,12 +203,10 @@ public class ArticleDetailFragment extends Fragment implements
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
                             Bitmap bitmap = imageContainer.getBitmap();
                             if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                mMutedColor = p.getDarkMutedColor(0xFF333333);
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
-                                updateStatusBar();
+                                if(backgroundProtection != null) {
+                                    backgroundProtection.setVisibility(View.VISIBLE);
+                                }
                             }
                         }
 
@@ -247,7 +217,9 @@ public class ArticleDetailFragment extends Fragment implements
                     });
         } else {
             mRootView.setVisibility(View.GONE);
-            titleView.setText("N/A");
+            if(titleView != null){
+                titleView.setText("N/A");
+            }
             bylineView.setText("N/A" );
             bodyView.setText("N/A");
         }
@@ -275,6 +247,7 @@ public class ArticleDetailFragment extends Fragment implements
         }
 
         bindViews();
+        ((AppCompatActivity)getActivity()).supportStartPostponedEnterTransition();
     }
 
     @Override
@@ -283,17 +256,6 @@ public class ArticleDetailFragment extends Fragment implements
         bindViews();
     }
 
-    public int getUpButtonFloor() {
-//        if (mPhotoContainerView == null || mPhotoView.getHeight() == 0) {
-//            return Integer.MAX_VALUE;
-//        }
-//
-//        // account for parallax
-//        return mIsCard
-//                ? (int) mPhotoContainerView.getTranslationY() + mPhotoView.getHeight() - mScrollY
-//                : mPhotoView.getHeight() - mScrollY;
-        return 0;
-    }
 
     @Override
     public void onOffsetChanged(AppBarLayout appBarLayout, int offset) {
@@ -302,47 +264,28 @@ public class ArticleDetailFragment extends Fragment implements
         float percentage = (float) Math.abs(offset) / (float) maxScroll;
 
         handleTitleBehavior(percentage);
-        //handleToolbarTitleVisibility(percentage);
 
     }
 
     private void handleTitleBehavior(float percentage) {
-        if (percentage >= PERCENTAGE_TO_ELLIPSIZE_TITLE) {
-            titleView.setVisibility(View.GONE);
-        }else{
-            titleView.setVisibility(View.VISIBLE);
-            titleView.setAlpha(1-percentage/PERCENTAGE_TO_ELLIPSIZE_TITLE);
-        }
-    }
-
-
-    /*private void handleAlphaOnTitle(float percentage) {
-
-        if (percentage >= PERCENTAGE_TO_HIDE_TITLE_DETAILS) {
-
-            if(mIsTheTitleContainerVisible) {
-                startAlphaAnimation(mTitleContainer, ALPHA_ANIMATIONS_DURATION, View.INVISIBLE);
-                mIsTheTitleContainerVisible = false;
-            }
-
-        } else {
-
-            if (!mIsTheTitleContainerVisible) {
-                startAlphaAnimation(mTitleContainer, ALPHA_ANIMATIONS_DURATION, View.VISIBLE);
-                mIsTheTitleContainerVisible = true;
+        if(titleView != null) {
+            if (percentage >= PERCENTAGE_TO_ELLIPSIZE_TITLE) {
+                titleView.setVisibility(View.GONE);
+            } else {
+                titleView.setVisibility(View.VISIBLE);
+                titleView.setAlpha(1 - percentage / PERCENTAGE_TO_ELLIPSIZE_TITLE);
             }
         }
-    }*/
-
-    public static void startAlphaAnimation (View v, long duration, int visibility) {
-
-        AlphaAnimation alphaAnimation = (visibility == View.VISIBLE)
-                ? new AlphaAnimation(0f, 1f)
-                : new AlphaAnimation(1f, 0f);
-
-        alphaAnimation.setDuration(duration);
-        alphaAnimation.setFillAfter(true);
-        v.startAnimation(alphaAnimation);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //change card elevation to pass under toolbar
+            if (percentage == 1) {
+                //collapsed
+                cardView.setElevation(getResources().getDimension(R.dimen.card_resting_elevation));
+            } else {
+                //expanded
+                cardView.setElevation(getResources().getDimension(R.dimen.card_raised_elevation));
+            }
+        }
     }
 
 }

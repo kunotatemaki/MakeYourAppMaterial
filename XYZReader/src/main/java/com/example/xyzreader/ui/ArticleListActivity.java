@@ -7,14 +7,19 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -37,12 +42,15 @@ public class ArticleListActivity extends AppCompatActivity implements
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private AppBarLayout appBarLayout;
+    private AppCompatActivity activity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
-
+        initActivityTransitions();
+        supportPostponeEnterTransition();
+        activity = this;
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         appBarLayout = (AppBarLayout) findViewById(R.id.toolbar_container);
 
@@ -55,6 +63,14 @@ public class ArticleListActivity extends AppCompatActivity implements
 
         if (savedInstanceState == null) {
             refresh();
+        }
+    }
+
+    private void initActivityTransitions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            TransitionInflater inflater = TransitionInflater.from(this);
+            Transition transition = inflater.inflateTransition(R.transition.main_window_exit_transition);
+            getWindow().setExitTransition(transition);
         }
     }
 
@@ -105,6 +121,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         StaggeredGridLayoutManager sglm =
                 new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(sglm);
+        supportStartPostponedEnterTransition();
     }
 
     @Override

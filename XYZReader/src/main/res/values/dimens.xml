@@ -26,4 +26,9 @@
     <dimen name="fab_margin">16dp</dimen>
     <!-- será 24 en tablets-->
 
+    <!-- cardview -->
+    <dimen name="card_raised_elevation">8dp</dimen>
+    <dimen name="card_resting_elevation">2dp</dimen>
+    <dimen name="card_margin_top">8dp</dimen>
+
 </resources>
