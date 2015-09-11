@@ -13,4 +13,9 @@
             <target android:targetId="@id/share_fab"/>
         </targets>
     </slide>
+    <slide android:slideEdge="bottom">
+        <targets>
+            <target android:targetId="@id/cardview_detailed"/>
+        </targets>
+    </slide>
 </transitionSet>

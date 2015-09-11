@@ -9,4 +9,8 @@
 
     <string name="up">Up</string>
 
+    <string name="name_imageview" translatable="false">name_imageview</string>
+    <string name="name_textview" translatable="false">name_textview</string>
+
+
 </resources>
